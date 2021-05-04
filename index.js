@@ -8,6 +8,7 @@ const { JSDOM } = jsdom;
 var parseUrl = require('url-parse');
 
 http.createServer(function (req, res) {
+    let dbHost=req.headers["x-forwarded-proto"]+"://"+req.headers.host+"/?feeds=";
     res.writeHead(200, {
         "Access-Control-Allow-Origin": "https://www.maskoding.com",
         "content-type": "text/plain"
@@ -63,7 +64,7 @@ http.createServer(function (req, res) {
             senData["update-post"]=updatePost;
             let fixDataPost=[];
             let startCountPost=150;
-            let formatApiPost=url+"/feeds/posts/default?alt=json&start-index=";
+            let formatApiPost=dbHost+url+"/feeds/posts/default?alt=json&start-index=";
             for(var i=0;i<Number(senData["total-post"]);i++){
               if(i==1){
                 fixDataPost.push(formatApiPost+i+"&max-results=150");
@@ -87,7 +88,7 @@ http.createServer(function (req, res) {
                 senData["update-page"]=updatePage;
                 let fixDataPage=[];
                 let startCountPage=150;
-                let formatApiPage=url+"/feeds/pages/default?alt=json&start-index=";
+                let formatApiPage=dbHost+url+"/feeds/pages/default?alt=json&start-index=";
                 for(var i=0;i<Number(senData["total-page"]);i++){
                   if(i==1){
                     fixDataPage.push(formatApiPage+i+"&max-results=150");
@@ -111,7 +112,7 @@ http.createServer(function (req, res) {
                     senData["update-comment"]=updateComment;
                     let fixDataComment=[];
                     let startCountComment=150;
-                    let formatApiComment=url+"/feeds/comments/default?alt=json&start-index=";
+                    let formatApiComment=dbHost+url+"/feeds/comments/default?alt=json&start-index=";
                     for(var i=0;i<Number(senData["total-comment"]);i++){
                       if(i==1){
                         fixDataComment.push(formatApiComment+i+"&max-results=150");
@@ -164,7 +165,60 @@ http.createServer(function (req, res) {
             res.end("error");
           };
         });
-    } else {
-        res.end("error")
+    } else if (req.url.split("/?feeds=")[1] == undefined == false && isUrl(req.url.split("/?feeds=")[1]) == true && req.method === "GET") {
+      let url=req.url.split("/?feeds=")[1];
+      unirest('GET',url)
+      .headers({
+          'user-agent': random_useragent.getRandom()
+      })
+      .end(function(data) {
+        try{
+          let dbData=data.raw_body;
+          dbData=JSON.parse(dbData).feed.entry;
+          let dbSend=[];
+          dbData.forEach(function(a){
+            let dbInfo={};
+            if(a.author[0]){
+              dbInfo["author"]=a.author[0].name["$t"];
+              if(a.author[0].uri){
+                dbInfo["link-author"]=a.author[0].uri["$t"];
+              }else{
+                dbInfo["link-author"]="Hidden";
+              };
+              if(a.author[0]["gd$image"]){
+                dbInfo["img-author"]=a.author[0]["gd$image"].src;
+              }else{
+                dbInfo["img-author"]="none";
+              };
+            };
+            dbInfo["title"]=a.title["$t"];
+            dbInfo["category"]=[];
+            a.link.forEach(function(b){
+              if(b.rel=="alternate"){
+                dbInfo["link"]=b.href;
+              };
+            });
+            if(a.content){
+              dbInfo["content"]=a.content["$t"];
+            }else if(a.summary){
+              dbInfo["content"]=a.summary["$t"];
+            };
+            if(a.category){
+              a.category.forEach(function(b){
+                dbInfo["category"].push(b.term);
+              });
+            };
+            dbInfo["time-publish"]=new Date(a.published["$t"]).getTime();
+            dbInfo["time-update"]=new Date(a.updated["$t"]).getTime();
+            dbInfo["id"]=a.id["$t"].split("post-")[1];
+            dbSend.push(dbInfo);
+          });
+          res.end(beautify(dbSend, null, 2, 80));
+        }catch(e){
+          res.end("error");
+        };
+      });
+    }else {
+        res.end("error");
     };
 }).listen(process.env.PORT);
