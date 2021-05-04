@@ -61,6 +61,17 @@ http.createServer(function (req, res) {
             };
             senData["total-post"]=totalUrlPost;
             senData["update-post"]=updatePost;
+            let fixDataPost=[];
+            let startCountPost=150;
+            let formatApiPost=url+"/feeds/posts/default?alt=json&start-index=";
+            for(var i=0;i<Number(senData["total-post"]);i++){
+              if(i==1){
+                fixDataPost.push(formatApiPost+i+"&max-results=150");
+              }else if(i==startCountPost){
+                startCountPost=startCountPost+150;
+                fixDataPost.push(formatApiPost+(i+1)+"&max-results=150");
+              };
+            };
             unirest('GET',url+"/feeds/pages/default?alt=json&start-index=1&max-results=1")
             .headers({
                 'user-agent': random_useragent.getRandom()
@@ -74,6 +85,17 @@ http.createServer(function (req, res) {
                 let updatePage=new Date(dbBlog2.updated["$t"]).getTime();
                 senData["total-page"]=totalUrlPage;
                 senData["update-page"]=updatePage;
+                let fixDataPage=[];
+                let startCountPage=150;
+                let formatApiPage=url+"/feeds/pages/default?alt=json&start-index=";
+                for(var i=0;i<Number(senData["total-page"]);i++){
+                  if(i==1){
+                    fixDataPage.push(formatApiPage+i+"&max-results=150");
+                  }else if(i==startCountPage){
+                    startCountPage=startCountPage+150;
+                    fixDataPage.push(formatApiPage+(i+1)+"&max-results=150");
+                  };
+                };
                 unirest('GET',url+"/feeds/comments/default?alt=json&start-index=1&max-results=1")
                 .headers({
                     'user-agent': random_useragent.getRandom()
@@ -87,6 +109,22 @@ http.createServer(function (req, res) {
                     let updateComment=new Date(dbBlog3.updated["$t"]).getTime();
                     senData["total-comment"]=totalComment;
                     senData["update-comment"]=updateComment;
+                    let fixDataComment=[];
+                    let startCountComment=150;
+                    let formatApiComment=url+"/feeds/comments/default?alt=json&start-index=";
+                    for(var i=0;i<Number(senData["total-comment"]);i++){
+                      if(i==1){
+                        fixDataComment.push(formatApiComment+i+"&max-results=150");
+                      }else if(i==startCountComment){
+                        startCountComment=startCountComment+150;
+                        fixDataComment.push(formatApiComment+(i+1)+"&max-results=150");
+                      };
+                    };
+                    senData["feeds"]={
+                      "post":fixDataPost,
+                      "pages":fixDataPage,
+                      "comment":fixDataComment
+                    };
                     senData["Other-Blogs-Owned"]=[];
                     if(senData["link-author"]=="Hidden"){
                       res.end(beautify(senData, null, 2, 100));
