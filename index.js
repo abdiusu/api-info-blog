@@ -32,7 +32,7 @@ const { JSDOM } = jsdom;
 var parseUrl = require('url-parse');
 
 http.createServer(function (req, res) {
-    let dbHost=req.headers["x-forwarded-proto"]+"://"+req.headers.host+"/?feeds=";
+    let dbHost=req.headers["x-forwarded-proto"]+"://"+req.headers.host;
     res.writeHead(200, {
         "Access-Control-Allow-Origin": "https://www.maskoding.com",
         "content-type": "text/plain"
@@ -57,8 +57,10 @@ http.createServer(function (req, res) {
             let linkAuthorBlog=dbBlog.author[0].uri;
             if(linkAuthorBlog){
               linkAuthorBlog=dbBlog.author[0].uri["$t"];
+              senData["link-author"]=dbHost+"/?profil="+linkAuthorBlog;
             }else{
               linkAuthorBlog="Hidden";
+              senData["link-author"]=linkAuthorBlog;
             };
             let idBlog=dbBlog.id["$t"].split("blog-")[1];
             let totalUrlPost=dbBlog["openSearch$totalResults"]["$t"];
@@ -68,7 +70,6 @@ http.createServer(function (req, res) {
             senData["name-author-blog"]=nameAuthorBlog;
             senData["description-blog"]=descriptionBlog;
             senData["image-author"]=imgAuthorBlog;
-            senData["link-author"]=linkAuthorBlog;
             senData["id-blog"]=idBlog;
             if(totalCategory){
               senData["category"]={
@@ -88,7 +89,7 @@ http.createServer(function (req, res) {
             senData["update-post"]=updatePost;
             let fixDataPost=[];
             let startCountPost=150;
-            let formatApiPost=dbHost+url+"/feeds/posts/default?alt=json&start-index=";
+            let formatApiPost=dbHost+"/?feeds="+url+"/feeds/posts/default?alt=json&start-index=";
             for(var i=0;i<Number(senData["total-post"]);i++){
               if(i==1){
                 fixDataPost.push(formatApiPost+i+"&max-results=150");
@@ -112,7 +113,7 @@ http.createServer(function (req, res) {
                 senData["update-page"]=updatePage;
                 let fixDataPage=[];
                 let startCountPage=150;
-                let formatApiPage=dbHost+url+"/feeds/pages/default?alt=json&start-index=";
+                let formatApiPage=dbHost+"/?feeds="+url+"/feeds/pages/default?alt=json&start-index=";
                 for(var i=0;i<Number(senData["total-page"]);i++){
                   if(i==1){
                     fixDataPage.push(formatApiPage+i+"&max-results=150");
@@ -136,7 +137,7 @@ http.createServer(function (req, res) {
                     senData["update-comment"]=updateComment;
                     let fixDataComment=[];
                     let startCountComment=150;
-                    let formatApiComment=dbHost+url+"/feeds/comments/default?alt=json&start-index=";
+                    let formatApiComment=dbHost+"/?feeds="+url+"/feeds/comments/default?alt=json&start-index=";
                     for(var i=0;i<Number(senData["total-comment"]);i++){
                       if(i==1){
                         fixDataComment.push(formatApiComment+i+"&max-results=150");
@@ -205,7 +206,7 @@ http.createServer(function (req, res) {
             if(a.author[0]){
               dbInfo["author"]=a.author[0].name["$t"];
               if(a.author[0].uri){
-                dbInfo["link-author"]=a.author[0].uri["$t"];
+                dbInfo["link-author"]=dbHost+"/?profil="+a.author[0].uri["$t"];
               }else{
                 dbInfo["link-author"]="Hidden";
               };
@@ -234,7 +235,11 @@ http.createServer(function (req, res) {
             };
             dbInfo["time-publish"]=new Date(a.published["$t"]).getTime();
             dbInfo["time-update"]=new Date(a.updated["$t"]).getTime();
-            dbInfo["id"]=a.id["$t"].split("post-")[1];
+            if(a.id["$t"].indexOf("post-")>0){
+              dbInfo["id"]=a.id["$t"].split("post-")[1];
+            }else if(a.id["$t"].indexOf("page-")>0){
+              dbInfo["id"]=a.id["$t"].split("page-")[1];
+            };
             dbSend.push(dbInfo);
           });
           res.end(beautify(dbSend, null, 2, 80));
@@ -242,7 +247,40 @@ http.createServer(function (req, res) {
           res.end("error");
         };
       });
+    } else if (req.url.split("/?profil=")[1] == undefined == false && isUrl(req.url.split("/?profil=")[1]) == true && req.method === "GET") {
+      let url=req.url.split("/?profil=")[1];
+      unirest('GET',url)
+      .headers({
+          'user-agent': random_useragent.getRandom()
+      })
+      .end(function (data) {
+        try{
+          let senData={
+            "name-author":"-",
+            "data-blog":[]
+          };
+          let dataLink=[];
+          const dom = new JSDOM(data.raw_body);
+          let dbSc=dom.window.document.querySelectorAll(".sidebar-item");
+          dbSc.forEach(function(a){
+            let toHref=a.querySelector('a');
+            if(toHref==null==false){
+              let nameWeb=toHref.innerHTML;
+              let linkWeb=toHref.getAttribute("href");
+              dataLink.push(linkWeb);
+              senData["data-blog"].push({
+                "name":nameWeb,
+                "link":linkWeb
+              });
+            };
+          });
+          senData["name-author"]=dom.window.document.querySelector("h1").innerHTML;
+          res.end(beautify(senData, null, 2, 100));
+        }catch(e){
+          res.end("error");
+        };
+      });
     }else {
-        res.end("error");
+      res.end("error");
     };
 }).listen(process.env.PORT);
