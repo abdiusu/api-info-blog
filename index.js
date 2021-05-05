@@ -225,6 +225,11 @@ http.createServer(function (req, res) {
                 dbInfo["link"]=b.href;
               };
             });
+            if(a["media$thumbnail"]){
+              dbInfo["thumbnail-content"]=a["media$thumbnail"].url;
+            }else{
+              dbInfo["thumbnail-content"]="none";
+            };
             if(a.content){
               dbInfo["content"]=a.content["$t"];
             }else if(a.summary){
@@ -238,9 +243,12 @@ http.createServer(function (req, res) {
             dbInfo["time-publish"]=new Date(a.published["$t"]).getTime();
             dbInfo["time-update"]=new Date(a.updated["$t"]).getTime();
             if(a.id["$t"].indexOf("post-")>0){
-              dbInfo["id"]=a.id["$t"].split("post-")[1];
+              dbInfo["id"]=Number(a.id["$t"].split("post-")[1]);
             }else if(a.id["$t"].indexOf("page-")>0){
-              dbInfo["id"]=a.id["$t"].split("page-")[1];
+              dbInfo["id"]=Number(a.id["$t"].split("page-")[1]);
+            };
+            if(a["thr$total"]){
+              dbInfo["total-comment"]=Number(a["thr$total"]["$t"]);
             };
             dbSend.push(dbInfo);
           });
