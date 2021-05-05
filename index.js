@@ -236,7 +236,7 @@ http.createServer(function (req, res) {
               dbInfo["type"]=a.content["type"];
             }else if(a.summary){
               dbInfo["content"]=a.summary["$t"];
-              dbInfo["type"]=a.content["type"];
+              dbInfo["type"]=a.summary["type"];
             };
             if(a.category){
               a.category.forEach(function(b){
