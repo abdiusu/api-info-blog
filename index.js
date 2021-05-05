@@ -72,7 +72,7 @@ http.createServer(function (req, res) {
             senData["name-author-blog"]=nameAuthorBlog;
             senData["description-blog"]=descriptionBlog;
             senData["image-author"]=imgAuthorBlog;
-            senData["id-blog"]=idBlog;
+            senData["id-blog"]=Number(idBlog);
             if(totalCategory){
               senData["category"]={
                 "total":totalCategory.length,
@@ -87,7 +87,7 @@ http.createServer(function (req, res) {
                 "data":[]
               };
             };
-            senData["total-post"]=totalUrlPost;
+            senData["total-post"]=Number(totalUrlPost);
             senData["update-post"]=updatePost;
             let fixDataPost=[];
             let startCountPost=150;
@@ -111,7 +111,7 @@ http.createServer(function (req, res) {
                 dbBlog2=dbBlog2.feed;
                 let totalUrlPage=dbBlog2["openSearch$totalResults"]["$t"];
                 let updatePage=new Date(dbBlog2.updated["$t"]).getTime();
-                senData["total-page"]=totalUrlPage;
+                senData["total-page"]=Number(totalUrlPage);
                 senData["update-page"]=updatePage;
                 let fixDataPage=[];
                 let startCountPage=150;
@@ -135,7 +135,7 @@ http.createServer(function (req, res) {
                     dbBlog3=dbBlog3.feed;
                     let totalComment=dbBlog3["openSearch$totalResults"]["$t"];
                     let updateComment=new Date(dbBlog3.updated["$t"]).getTime();
-                    senData["total-comment"]=totalComment;
+                    senData["total-comment"]=Number(totalComment);
                     senData["update-comment"]=updateComment;
                     let fixDataComment=[];
                     let startCountComment=150;
