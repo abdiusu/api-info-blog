@@ -154,10 +154,10 @@ http.createServer(function (req, res) {
                       "comment":fixDataComment
                     };
                     senData["Other-Blogs-Owned"]=[];
-                    if(senData["link-author"]=="Hidden"){
+                    if(linkAuthorBlog=="Hidden"){
                       res.end(beautify(senData, null, 2, 100));
                     }else{
-                      unirest('GET',senData["link-author"])
+                      unirest('GET',linkAuthorBlog)
                       .headers({
                           'user-agent': random_useragent.getRandom()
                       })
@@ -172,7 +172,8 @@ http.createServer(function (req, res) {
                             if(parseUrl(linkWeb).hostname==parseUrl(url).hostname==false){
                               senData["Other-Blogs-Owned"].push({
                                 "name":nameWeb,
-                                "link":linkWeb
+                                "link":linkWeb,
+                                "api-info":dbHost+"/?info="+linkWeb
                               });
                             };
                           };
@@ -280,7 +281,8 @@ http.createServer(function (req, res) {
               dataLink.push(linkWeb);
               senData["data-blog"].push({
                 "name":nameWeb,
-                "link":linkWeb
+                "link":linkWeb,
+                "api-info":dbHost+"/?info="+linkWeb
               });
             };
           });
