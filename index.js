@@ -233,8 +233,10 @@ http.createServer(function (req, res) {
             };
             if(a.content){
               dbInfo["content"]=a.content["$t"];
+              dbInfo["type"]=a.content["type"];
             }else if(a.summary){
               dbInfo["content"]=a.summary["$t"];
+              dbInfo["type"]=a.content["type"];
             };
             if(a.category){
               a.category.forEach(function(b){
