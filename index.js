@@ -36,7 +36,7 @@ var parseUrl = require('url-parse');
 http.createServer(function (req, res) {
     let dbHost=req.headers["x-forwarded-proto"]+"://"+req.headers.host;
     res.writeHead(200, {
-        "Access-Control-Allow-Origin": "https://www.maskoding.com",
+        "Access-Control-Allow-Origin": "*",
         "content-type": "text/plain"
     });
     if (req.url.split("/?info=")[1] == undefined == false && isUrl(req.url.split("/?info=")[1]) == true && req.method === "GET") {
