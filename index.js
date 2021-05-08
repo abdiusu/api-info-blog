@@ -226,7 +226,18 @@ http.createServer(function (req, res) {
                 dbInfo["link"]=b.href;
               };
             });
+            dbInfo["thumbnail-hd"]="none";
             if(a["media$thumbnail"]){
+              let thumCompress=a["media$thumbnail"].url;
+              let mapSplitThum=thumCompress.split("/");
+              if(mapSplitThum.length>7){
+                let targetSplit=mapSplitThum.length-2;
+                let targetThumRemove="/"+mapSplitThum[targetSplit]+"/";
+                let thumHd=thumCompress.replace(targetThumRemove,"/");
+                dbInfo["thumbnail-hd"]=thumHd;
+              }else{
+                dbInfo["thumbnail-hd"]="none";
+              };
               dbInfo["thumbnail-content"]=a["media$thumbnail"].url;
             }else{
               dbInfo["thumbnail-content"]="none";
