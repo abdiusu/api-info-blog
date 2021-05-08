@@ -148,6 +148,13 @@ http.createServer(function (req, res) {
                         fixDataComment.push(formatApiComment+(i+1)+"&max-results=150");
                       };
                     };
+                    dbBlog.entry.forEach(function(a){
+                      if(a.content){
+                        senData["type-feeds"]="full";
+                      }else if(a.summary){
+                        senData["type-feeds"]="summary";
+                      };
+                    });
                     senData["feeds"]={
                       "post":fixDataPost,
                       "pages":fixDataPage,
