@@ -232,6 +232,7 @@ http.createServer(function (req, res) {
                 let dbBlog=resku.raw_body;
                 dbBlog=JSON.parse(dbBlog);
                 dbBlog=dbBlog.feed;
+                senData.blogspot="yes";
                 dbBlog.entry.forEach(function(a){
                   if(a.content){
                     senData["type-feeds"]="full";
