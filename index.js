@@ -200,6 +200,72 @@ http.createServer(function (req, res) {
             res.end("error");
           };
         });
+    } else if (req.url.split("/?check=")[1] == undefined == false && isUrl(req.url.split("/?check=")[1]) == true && req.method === "GET") {
+      let url=req.url.split("/?check=")[1];
+      url=parseUrl(url).origin;
+      let senData={};
+      unirest('GET',url)
+      .end(function(outRes){
+        if(outRes.request==undefined){
+          senData.status=outRes.error.code;
+          senData.blogspot="no";
+          res.end(JSON.stringify(senData));
+        }else{
+          url=parseUrl(outRes.request.href).origin;
+          unirest('GET',url+"/feeds/posts/default?alt=json&start-index=1&max-results=1")
+          .headers({
+              'user-agent': random_useragent.getRandom()
+          })
+          .end(function (resku) {
+            if(resku.request==undefined){
+              senData.status=resku.error.code;
+              senData.blogspot="no";
+              senData["real-url"]=url;
+              res.end(JSON.stringify(senData));
+            }else{
+              let resS=resku.request.response.statusCode;
+              let resSM=resku.request.response.statusMessage;
+              senData["status-code"]=resS;
+              senData["status-message"]=resSM;
+              senData["real-url"]=url;
+              try{
+                let dbBlog=resku.raw_body;
+                dbBlog=JSON.parse(dbBlog);
+                dbBlog=dbBlog.feed;
+                dbBlog.entry.forEach(function(a){
+                  if(a.content){
+                    senData["type-feeds"]="full";
+                  }else if(a.summary){
+                    senData["type-feeds"]="summary";
+                  };
+                });
+                let totalUrlPost=dbBlog["openSearch$totalResults"]["$t"];
+                senData["total-post"]=Number(totalUrlPost);
+                let startCountPost=150;
+                senData["feed-post"]={
+                  "api-point":dbHost+"/?feeds=",
+                  "target":url,
+                  "start":"/feeds/posts/default?alt=json&start-index=",
+                  "end":"&max-results=150",
+                  "data":[]
+                };
+                for(var i=0;i<Number(totalUrlPost);i++){
+                  if(i==1){
+                    senData["feed-post"].data.push(i);
+                  }else if(i==startCountPost){
+                    startCountPost=startCountPost+150;
+                    senData["feed-post"].data.push((i+1));
+                  };
+                };
+                res.end(JSON.stringify(senData));
+              }catch(e){
+                senData.blogspot="no";
+                res.end(JSON.stringify(senData));
+              };
+            };
+          })
+        };
+      });
     } else if (req.url.split("/?feeds=")[1] == undefined == false && isUrl(req.url.split("/?feeds=")[1]) == true && req.method === "GET") {
       let url=req.url.split("/?feeds=")[1];
       unirest('GET',url)
