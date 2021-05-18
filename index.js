@@ -32,6 +32,7 @@ var beautify = require("json-beautify");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 var parseUrl = require('url-parse');
+const {gzip} = require('node-gzip');
 
 http.createServer(function (req, res) {
     let dbHost=req.headers["x-forwarded-proto"]+"://"+req.headers.host;
@@ -185,7 +186,20 @@ http.createServer(function (req, res) {
                             };
                           };
                         });
-                        res.end(beautify(senData, null, 2, 100));
+                        senData=beautify(senData, null, 2, 100);
+                        gzip(senData)
+                        .then((compressed) => {
+                          res.writeHead(200, {
+                              "Access-Control-Allow-Origin": "*",
+                              "content-type": "text/plain",
+                              "content-encoding": "gzip"
+                          });
+                          res.write(compressed);
+                          res.end();
+                        })
+                        .catch(function(e){
+                          res.end("error");
+                        });
                       });
                     };
                   }catch(e){
@@ -258,10 +272,36 @@ http.createServer(function (req, res) {
                     senData["feed-post"].data.push((i+1));
                   };
                 };
-                res.end(JSON.stringify(senData));
+                senData=beautify(senData, null, 2, 80);
+                gzip(senData)
+                .then((compressed) => {
+                  res.writeHead(200, {
+                      "Access-Control-Allow-Origin": "*",
+                      "content-type": "text/plain",
+                      "content-encoding": "gzip"
+                  });
+                  res.write(compressed);
+                  res.end();
+                })
+                .catch(function(e){
+                  res.end("error");
+                });
               }catch(e){
                 senData.blogspot="no";
-                res.end(JSON.stringify(senData));
+                senData=beautify(senData, null, 2, 80);
+                gzip(senData)
+                .then((compressed) => {
+                  res.writeHead(200, {
+                      "Access-Control-Allow-Origin": "*",
+                      "content-type": "text/plain",
+                      "content-encoding": "gzip"
+                  });
+                  res.write(compressed);
+                  res.end();
+                })
+                .catch(function(e){
+                  res.end("error");
+                });
               };
             };
           })
@@ -340,7 +380,20 @@ http.createServer(function (req, res) {
             };
             dbSend.push(dbInfo);
           });
-          res.end(beautify(dbSend, null, 2, 80));
+          dbSend=beautify(dbSend, null, 2, 80);
+          gzip(dbSend)
+          .then((compressed) => {
+            res.writeHead(200, {
+                "Access-Control-Allow-Origin": "*",
+                "content-type": "text/plain",
+                "content-encoding": "gzip"
+            });
+            res.write(compressed);
+            res.end();
+          })
+          .catch(function(e){
+            res.end("error");
+          });
         }catch(e){
           res.end("error");
         };
@@ -374,7 +427,20 @@ http.createServer(function (req, res) {
             };
           });
           senData["name-author"]=dom.window.document.querySelector("h1").innerHTML;
-          res.end(beautify(senData, null, 2, 100));
+          senData=beautify(senData, null, 2, 80);
+          gzip(senData)
+          .then((compressed) => {
+            res.writeHead(200, {
+                "Access-Control-Allow-Origin": "*",
+                "content-type": "text/plain",
+                "content-encoding": "gzip"
+            });
+            res.write(compressed);
+            res.end();
+          })
+          .catch(function(e){
+            res.end("error");
+          });
         }catch(e){
           res.end("error");
         };

@@ -17,6 +17,7 @@
     "is-valid-http-url": "^1.0.3",
     "jsdom": "^16.5.3",
     "json-beautify": "^1.1.1",
+    "node-gzip": "^1.1.2",
     "random-useragent": "^0.5.0",
     "unirest": "^0.6.0",
     "url-parse": "^1.5.1"
