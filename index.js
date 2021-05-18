@@ -163,7 +163,20 @@ http.createServer(function (req, res) {
                     };
                     senData["Other-Blogs-Owned"]=[];
                     if(linkAuthorBlog=="Hidden"){
-                      res.end(beautify(senData, null, 2, 100));
+                      senData=beautify(senData, null, 2, 100);
+                      gzip(senData)
+                      .then((compressed) => {
+                        res.writeHead(200, {
+                            "Access-Control-Allow-Origin": "*",
+                            "content-type": "text/plain",
+                            "content-encoding": "gzip"
+                        });
+                        res.write(compressed);
+                        res.end();
+                      })
+                      .catch(function(e){
+                        res.end("error");
+                      });
                     }else{
                       unirest('GET',linkAuthorBlog)
                       .headers({
